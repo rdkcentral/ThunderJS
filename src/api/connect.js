@@ -44,8 +44,19 @@ export default options => {
           })
         }
         socket.addEventListener('open', () => {
+          notificationListener({
+            method: 'client.ThunderJS.events.connect',
+          })
           connection = socket
           resolve(connection)
+        })
+
+        socket.addEventListener('close', () => {
+          notificationListener({
+            method: 'client.ThunderJS.events.disconnect',
+          })
+          socket = null
+          connection = null
         })
       } catch (e) {
         reject(e)

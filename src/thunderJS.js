@@ -84,11 +84,16 @@ const thunder = options => ({
     // to do
   },
   on() {
-    // first make sure the plugin is the first argument (independent from being called as argument style or object style)
     const args = [...arguments]
-    if (this.plugin) {
-      if (args[0] !== this.plugin) {
-        args.unshift(this.plugin)
+    // first make sure the plugin is the first argument (independent from being called as argument style or object style)
+    // except when listening to a 'special ThunderJS' event
+    if (args[0].indexOf('connect', 'disconnect') > -1) {
+      args.unshift('ThunderJS')
+    } else {
+      if (this.plugin) {
+        if (args[0] !== this.plugin) {
+          args.unshift(this.plugin)
+        }
       }
     }
 

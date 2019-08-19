@@ -50,23 +50,26 @@ const register = function(plugin, event, callback) {
     // create an array to store this plugin/event's callback(s)
     listeners[listener_id] = []
 
-    // request the server to send us notifications for this event
-    const method = 'register'
+    // ThunderJS as a plugin means it's an internal event, so no need to make an API call
+    if (plugin !== 'ThunderJS') {
+      // request the server to send us notifications for this event
+      const method = 'register'
 
-    // remove 'event' from the listener_id to send as request id
-    const request_id = listener_id
-      .split('.')
-      .slice(0, -1)
-      .join('.')
+      // remove 'event' from the listener_id to send as request id
+      const request_id = listener_id
+        .split('.')
+        .slice(0, -1)
+        .join('.')
 
-    const params = {
-      event,
-      id: request_id,
+      const params = {
+        event,
+        id: request_id,
+      }
+      this.api
+        .request(plugin, method, params)
+        .then()
+        .catch()
     }
-    this.api
-      .request(plugin, method, params)
-      .then()
-      .catch()
   }
 
   // register the callback
@@ -81,18 +84,21 @@ const unregister = function(plugin, event) {
 
   delete listeners[listener_id]
 
-  // request the server to stop sending us notifications for this event
-  const method = 'unregister'
+  // ThunderJS as a plugin means it's an internal event, so no need to make an API call
+  if (plugin !== 'ThunderJS') {
+    // request the server to stop sending us notifications for this event
+    const method = 'unregister'
 
-  // remove 'event' from the listener_id to send as request id
-  const request_id = listener_id
-    .split('.')
-    .slice(0, -1)
-    .join('.')
+    // remove 'event' from the listener_id to send as request id
+    const request_id = listener_id
+      .split('.')
+      .slice(0, -1)
+      .join('.')
 
-  const params = {
-    event,
-    id: request_id,
+    const params = {
+      event,
+      id: request_id,
+    }
+    this.api.request(plugin, method, params)
   }
-  this.api.request(plugin, method, params)
 }
