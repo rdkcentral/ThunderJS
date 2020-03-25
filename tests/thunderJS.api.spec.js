@@ -44,6 +44,9 @@ test('makeWebsocketAddress - unit test', assert => {
     endpoint: '/api',
     protocol: 'wss://',
   })
+  const address3 = API.makeWebsocketAddress({
+    token: 'token1234',
+  })
 
   assert.equals(
     address,
@@ -56,11 +59,24 @@ test('makeWebsocketAddress - unit test', assert => {
     'makeWebsocketAddress should return customized addresss when options are passed'
   )
 
+  assert.equals(
+    address3,
+    'ws://localhost:80/jsonrpc?token=token1234',
+    'makeWebsocketAddress should return with token as a query param when passed as an option'
+  )
+
   assert.end()
 })
 
 test('thunderJS - api - custom websocket connection', assert => {
   wsStub.resetHistory()
+
+  // make thunder.token() available
+  globalThis.thunder = {
+    token() {
+      return 'thundertoken123'
+    },
+  }
 
   const options = {
     host: '192.168.1.100',
@@ -74,7 +90,7 @@ test('thunderJS - api - custom websocket connection', assert => {
   thunderJS.DeviceInfo.systeminfo()
 
   assert.ok(
-    wsStub.calledWith('wss://192.168.1.100:2020/api'),
+    wsStub.calledWith('wss://192.168.1.100:2020/api?token=thundertoken123'),
     'Websocket with default custom address should be initiated'
   )
 

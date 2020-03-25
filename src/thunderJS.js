@@ -24,6 +24,11 @@ import listener from './listener'
 let api
 
 export default options => {
+  // add extra option with token when thunder.token() is available
+  if (globalThis.thunder && typeof globalThis.thunder.token === 'function') {
+    options.token = globalThis.thunder.token()
+  }
+
   api = API(options)
   return wrapper({ ...thunder(options), ...plugins })
 }

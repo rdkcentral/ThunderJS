@@ -293,7 +293,7 @@ test('thunderJS - calls - argument based - different plugins in sequence', asser
   assert.end()
 })
 
-test('thunderJS - calls - argument based mixed with aobject based', assert => {
+test('thunderJS - calls - argument based mixed with object based', assert => {
   resetStubsAndSpies()
 
   let thunderJS = ThunderJS(options)
