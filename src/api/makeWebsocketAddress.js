@@ -29,5 +29,6 @@ export default options => {
     (options && options.host) || host,
     ':' + ((options && options.port) || port),
     (options && options.endpoint) || endpoint,
+    options && options.token ? '?token=' + options.token : null,
   ].join('')
 }
