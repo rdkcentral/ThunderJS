@@ -33,8 +33,8 @@ test('thunderJS - connect - callback when opening connection', assert => {
   const connectCallbackFake = sinon.fake()
   thunderJS.on('connect', connectCallbackFake)
 
-  const disConnectCallbackFake = sinon.fake()
-  thunderJS.on('connect', disConnectCallbackFake)
+  const disconnectCallbackFake = sinon.fake()
+  thunderJS.on('disconnect', disconnectCallbackFake)
 
   // make a dummy API call to acivate connection
   thunderJS.call('Foo', 'bar')
@@ -51,7 +51,7 @@ test('thunderJS - connect - callback when opening connection', assert => {
 
     setTimeout(() => {
       assert.equals(
-        disConnectCallbackFake.callCount,
+        disconnectCallbackFake.callCount,
         1,
         'Disconnect callback should be called once after connection is closed'
       )
