@@ -25,55 +25,58 @@ import makeWebsocketAddress from './makeWebsocketAddress'
 
 const protocols = 'notification'
 
-let connection = null
 let socket = null
 
 export default options => {
   return new Promise((resolve, reject) => {
-    if (connection) {
-      resolve(connection)
-    } else {
-      try {
-        if (!socket) {
-          socket = new WebSocket(makeWebsocketAddress(options), protocols)
-          socket.addEventListener('message', message => {
-            requestQueueResolver(message.data)
-          })
-          socket.addEventListener('message', message => {
-            notificationListener(message.data)
-          })
-        }
-        socket.addEventListener('open', () => {
-          notificationListener({
-            method: 'client.ThunderJS.events.connect',
-          })
-          connection = socket
-          resolve(connection)
-        })
+    if (socket && socket.readyState === 1) {
+      resolve(socket)
+    } else if (!socket) {
+      // create a new socket
+      socket = new WebSocket(makeWebsocketAddress(options), protocols)
+      socket.addEventListener('message', message => {
+        requestQueueResolver(message.data)
+      })
+      socket.addEventListener('message', message => {
+        notificationListener(message.data)
+      })
 
-        socket.addEventListener('error', m => {
+      socket.addEventListener('error', m => {
+        notificationListener({
+          method: 'client.ThunderJS.events.error',
+        })
+        socket = null
+        reject(m)
+      })
+
+      socket.addEventListener('open', () => {
+        notificationListener({
+          method: 'client.ThunderJS.events.connect',
+        })
+        resolve(socket)
+      })
+
+      socket.addEventListener('close', m => {
+        // only send notification if we where previously connected
+        if (socket) {
           notificationListener({
-            method: 'client.ThunderJS.events.error',
+            method: 'client.ThunderJS.events.disconnect',
           })
           socket = null
-          connection = null
           reject(m)
+        }
+      })
+    } else if (socket && socket.readyState === 0) {
+      // if socket is connecting, wait for the connection to be ready
+      socket.addEventListener('open', () => {
+        notificationListener({
+          method: 'client.ThunderJS.events.connect',
         })
-
-        socket.addEventListener('close', m => {
-          // only send notification if we where previously connected
-          if (socket) {
-            notificationListener({
-              method: 'client.ThunderJS.events.disconnect',
-            })
-            socket = null
-            connection = null
-            reject(m)
-          }
-        })
-      } catch (e) {
-        reject(e)
-      }
+        resolve(socket)
+      })
+    } else {
+      // socket must be closed or closing, reject it
+      reject('Socket closing or closed')
     }
   })
 }
