@@ -24,5 +24,15 @@ export default (options, body) => {
     .then(connection => {
       connection.send(JSON.stringify(body))
     })
-    .catch(console.error)
+    .catch(e => {
+      if (options.debug) {
+        console.log(' ')
+        console.log('API ERROR:')
+        console.log(JSON.stringify(options, null, 2))
+        console.log(' ')
+        console.log('ERROR: ')
+        console.log(JSON.stringify(e, null, 2))
+        console.log(' ')
+      }
+    })
 }

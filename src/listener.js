@@ -65,10 +65,7 @@ const register = function(plugin, event, callback) {
         event,
         id: request_id,
       }
-      this.api
-        .request(plugin, method, params)
-        .then()
-        .catch()
+      this.api.request(plugin, method, params)
     }
   }
 

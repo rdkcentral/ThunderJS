@@ -51,12 +51,25 @@ export default options => {
           resolve(connection)
         })
 
-        socket.addEventListener('close', () => {
+        socket.addEventListener('error', m => {
           notificationListener({
-            method: 'client.ThunderJS.events.disconnect',
+            method: 'client.ThunderJS.events.error',
           })
           socket = null
           connection = null
+          reject(m)
+        })
+
+        socket.addEventListener('close', m => {
+          // only send notification if we where previously connected
+          if (socket) {
+            notificationListener({
+              method: 'client.ThunderJS.events.disconnect',
+            })
+            socket = null
+            connection = null
+            reject(m)
+          }
         })
       } catch (e) {
         reject(e)
