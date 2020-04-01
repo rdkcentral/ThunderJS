@@ -61,9 +61,9 @@ export default options => {
 
       // Browser always first error followed by a close, never just an error event
       // so lets look at close events to detect if it worked or not
-      let handleConnectClosure = m => {
+      const handleConnectClosure = event => {
         socket = null
-        reject(m)
+        reject(event)
       }
 
       socket.addEventListener('close', handleConnectClosure)
