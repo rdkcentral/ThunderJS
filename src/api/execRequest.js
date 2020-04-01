@@ -20,19 +20,7 @@
 import connect from './connect'
 
 export default (options, body) => {
-  connect(options)
-    .then(connection => {
-      connection.send(JSON.stringify(body))
-    })
-    .catch(e => {
-      if (options.debug) {
-        console.log(' ')
-        console.log('API ERROR:')
-        console.log(JSON.stringify(options, null, 2))
-        console.log(' ')
-        console.log('ERROR: ')
-        console.log(JSON.stringify(e, null, 2))
-        console.log(' ')
-      }
-    })
+  return connect(options).then(connection => {
+    connection.send(JSON.stringify(body))
+  })
 }
