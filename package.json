@@ -4,7 +4,7 @@
     "Metrological, Wouter <wouter@metrological.com>"
   ],
   "name": "ThunderJS",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "license": "apache",
   "browser": "dist/thunderJS.js",
   "main": "module/thunderJS.js",
@@ -36,25 +36,26 @@
     "url": "https://github.com/WebPlatformForEmbedded/ThunderJS/issues"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "babel-eslint": "^10.0.1",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "babel-eslint": "^10.1.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.3.0",
-    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-prettier": "^3.1.2",
     "esm": "^3.2.25",
     "husky": "^2.4.1",
     "lint-staged": "^8.2.1",
-    "prettier": "^1.18.2",
-    "rollup": "^1.17.0",
-    "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-commonjs": "^10.0.1",
+    "prettier": "^1.19.1",
+    "rollup": "^1.32.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-license": "^0.13.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-peer-deps-external": "^2.2.0",
-    "rollup-plugin-uglify": "^6.0.2",
-    "sinon": "^7.3.2",
+    "rollup-plugin-peer-deps-external": "^2.2.2",
+    "rollup-plugin-uglify": "^6.0.4",
+    "sinon": "^7.5.0",
     "tap-diff": "^0.1.1",
-    "tape": "^4.10.2"
+    "tape": "^4.13.2"
   },
   "peerDependencies": {
     "isomorphic-ws": "^4.0.1",
@@ -62,6 +63,6 @@
   },
   "dependencies": {
     "isomorphic-ws": "^4.0.1",
-    "ws": "^7.0.1"
+    "ws": "^7.2.3"
   }
 }

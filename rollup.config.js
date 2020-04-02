@@ -18,10 +18,13 @@
  */
 
 import babel from 'rollup-plugin-babel'
-import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
-import { uglify } from 'rollup-plugin-uglify'
+import license from 'rollup-plugin-license'
 import peerDepsExternal from 'rollup-plugin-peer-deps-external'
+import resolve from 'rollup-plugin-node-resolve'
+import { uglify } from 'rollup-plugin-uglify'
+
+import LicenseBanner from './license.js'
 
 export default [
   {
@@ -31,7 +34,17 @@ export default [
       format: 'iife',
       name: 'ThunderJS',
     },
-    plugins: [resolve({ browser: true }), commonjs(), babel(), uglify()],
+    plugins: [
+      resolve({ browser: true }),
+      commonjs(),
+      babel(),
+      uglify(),
+      license({
+        banner: {
+          content: LicenseBanner,
+        },
+      }),
+    ],
   },
   {
     input: './src/thunderJS.js',
@@ -40,6 +53,15 @@ export default [
       format: 'cjs',
       name: 'ThunderJS',
     },
-    plugins: [peerDepsExternal(), babel(), uglify()],
+    plugins: [
+      peerDepsExternal(),
+      babel(),
+      uglify(),
+      license({
+        banner: {
+          content: LicenseBanner,
+        },
+      }),
+    ],
   },
 ]

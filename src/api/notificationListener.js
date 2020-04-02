@@ -31,8 +31,6 @@ export default data => {
       callbacks.forEach(callback => {
         callback(data.params)
       })
-    } else {
-      console.log('no callbacks for ' + data.method)
     }
   }
 }

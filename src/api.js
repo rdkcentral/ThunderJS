@@ -41,7 +41,9 @@ export default options => {
           reject,
         }
 
-        execRequest(options, body)
+        execRequest(options, body).catch(m => {
+          reject(m)
+        })
       })
     },
   }

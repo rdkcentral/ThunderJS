@@ -20,9 +20,7 @@
 import connect from './connect'
 
 export default (options, body) => {
-  connect(options)
-    .then(connection => {
-      connection.send(JSON.stringify(body))
-    })
-    .catch(console.error)
+  return connect(options).then(connection => {
+    connection.send(JSON.stringify(body))
+  })
 }

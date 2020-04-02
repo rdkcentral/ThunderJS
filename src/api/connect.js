@@ -24,32 +24,73 @@ import notificationListener from './notificationListener'
 import makeWebsocketAddress from './makeWebsocketAddress'
 
 const protocols = 'notification'
-
-let connection = null
 let socket = null
 
 export default options => {
   return new Promise((resolve, reject) => {
-    if (connection) {
-      resolve(connection)
-    } else {
-      try {
-        if (!socket) {
-          socket = new WebSocket(makeWebsocketAddress(options), protocols)
-          socket.addEventListener('message', message => {
-            requestQueueResolver(message.data)
-          })
-          socket.addEventListener('message', message => {
-            notificationListener(message.data)
-          })
-        }
-        socket.addEventListener('open', () => {
-          connection = socket
-          resolve(connection)
-        })
-      } catch (e) {
-        reject(e)
+    //return socket
+    if (socket && socket.readyState === 1) return resolve(socket)
+
+    //wait for socket to be opened
+    //FIXME OR FIXME NOT: we could throttle how many event listeners we allow while we're in "connecting" state
+    if (socket && socket.readyState === 0) {
+      const waitForOpen = () => {
+        socket.removeEventListener('open', waitForOpen)
+        resolve(socket)
       }
+
+      return socket.addEventListener('open', waitForOpen)
+    }
+
+    // create a new socket
+    if (socket === null) {
+      socket = new WebSocket(makeWebsocketAddress(options), protocols)
+      socket.addEventListener('message', message => {
+        requestQueueResolver(message.data)
+      })
+      socket.addEventListener('message', message => {
+        notificationListener(message.data)
+      })
+
+      socket.addEventListener('error', () => {
+        notificationListener({
+          method: 'client.ThunderJS.events.error',
+        })
+        socket = null
+      })
+
+      // Browser always first error followed by a close, never just an error event
+      // so lets look at close events to detect if it worked or not
+      const handleConnectClosure = event => {
+        socket = null
+        reject(event)
+      }
+
+      socket.addEventListener('close', handleConnectClosure)
+
+      socket.addEventListener('open', () => {
+        notificationListener({
+          method: 'client.ThunderJS.events.connect',
+        })
+
+        //remove our connect close event listener to avoid sending reject() out of scope
+        socket.removeEventListener('close', handleConnectClosure)
+
+        //setup our permanent close event listeners
+        socket.addEventListener('close', () => {
+          notificationListener({
+            method: 'client.ThunderJS.events.disconnect',
+          })
+
+          // cleanup the socket
+          socket = null
+        })
+
+        resolve(socket)
+      })
+    } else {
+      socket = null
+      reject('Socket error')
     }
   })
 }
