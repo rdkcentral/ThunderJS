@@ -17,12 +17,14 @@
  * limitations under the License.
  */
 
+import path from 'path'
 import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
 import license from 'rollup-plugin-license'
-import peerDepsExternal from 'rollup-plugin-peer-deps-external'
 import resolve from 'rollup-plugin-node-resolve'
 import { uglify } from 'rollup-plugin-uglify'
+import alias from '@rollup/plugin-alias'
+import cleanup from 'rollup-plugin-cleanup';
 
 import LicenseBanner from './license.js'
 
@@ -35,6 +37,11 @@ export default [
       name: 'ThunderJS',
     },
     plugins: [
+      alias({
+        entries: {
+          ws: path.join(__dirname, 'alias/ws.js'),
+        },
+      }),
       resolve({ browser: true }),
       commonjs(),
       babel(),
@@ -50,13 +57,17 @@ export default [
     input: './src/thunderJS.js',
     output: {
       file: './module/thunderJS.js',
-      format: 'cjs',
       name: 'ThunderJS',
     },
     plugins: [
-      peerDepsExternal(),
-      babel(),
-      uglify(),
+      alias({
+        entries: {
+          ws: path.join(__dirname, 'alias/ws.js'),
+        },
+      }),
+      resolve({ browser: true }),
+      commonjs(),
+      cleanup(),
       license({
         banner: {
           content: LicenseBanner,
