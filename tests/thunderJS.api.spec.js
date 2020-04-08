@@ -22,7 +22,7 @@ import sinon from 'sinon'
 
 import ThunderJS from '../src/thunderJS'
 import * as API from '../src/api/index'
-import * as ws from 'isomorphic-ws'
+import * as ws from 'ws'
 
 let wsStub
 

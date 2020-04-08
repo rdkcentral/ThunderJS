@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import WebSocket from 'isomorphic-ws'
+import WebSocket from 'ws'
 
 import requestQueueResolver from './requestQueueResolver'
 import notificationListener from './notificationListener'

@@ -4,11 +4,11 @@
     "Metrological, Wouter <wouter@metrological.com>"
   ],
   "name": "ThunderJS",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "license": "apache",
   "browser": "dist/thunderJS.js",
-  "main": "module/thunderJS.js",
-  "cjs": "module/thunderJS.js",
+  "main": "src/thunderJS.js",
+  "module": "module/thunderJS.js",
   "scripts": {
     "test": "tape -r esm tests/**/*.spec.js | tap-diff",
     "lint": "eslint '**/*.{js}'",
@@ -38,6 +38,7 @@
   "devDependencies": {
     "@babel/core": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
+    "@rollup/plugin-alias": "^3.0.1",
     "babel-eslint": "^10.1.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.3.0",
@@ -48,6 +49,7 @@
     "prettier": "^1.19.1",
     "rollup": "^1.32.1",
     "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-cleanup": "^3.1.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-license": "^0.13.0",
     "rollup-plugin-node-resolve": "^5.2.0",
@@ -57,12 +59,7 @@
     "tap-diff": "^0.1.1",
     "tape": "^4.13.2"
   },
-  "peerDependencies": {
-    "isomorphic-ws": "^4.0.1",
-    "ws": "^7.0.1"
-  },
   "dependencies": {
-    "isomorphic-ws": "^4.0.1",
     "ws": "^7.2.3"
   }
 }

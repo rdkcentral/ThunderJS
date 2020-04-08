@@ -17,4 +17,345 @@
  * limitations under the License.
  */
 
-"use strict";function _interopDefault(e){return e&&"object"==typeof e&&"default"in e?e.default:e}var WebSocket=_interopDefault(require("isomorphic-ws"));function _typeof(e){return(_typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}function _defineProperty(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}function ownKeys(t,e){var n=Object.keys(t);if(Object.getOwnPropertySymbols){var r=Object.getOwnPropertySymbols(t);e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)}return n}function _objectSpread2(t){for(var e=1;e<arguments.length;e++){var n=null!=arguments[e]?arguments[e]:{};e%2?ownKeys(Object(n),!0).forEach(function(e){_defineProperty(t,e,n[e])}):Object.getOwnPropertyDescriptors?Object.defineProperties(t,Object.getOwnPropertyDescriptors(n)):ownKeys(Object(n)).forEach(function(e){Object.defineProperty(t,e,Object.getOwnPropertyDescriptor(n,e))})}return t}var requestsQueue={},listeners={},requestQueueResolver=function(e){if("string"==typeof e&&(e=JSON.parse(e.normalize().replace(/\\x([0-9A-Fa-f]{2})/g,""))),e.id){var t=requestsQueue[e.id];t?("result"in e?t.resolve(e.result):t.reject(e.error),delete requestsQueue[e.id]):console.log("no pending request found with id "+e.id)}},notificationListener=function(t){if("string"==typeof t&&(t=JSON.parse(t.normalize().replace(/\\x([0-9A-Fa-f]{2})/g,""))),!t.id&&t.method){var e=listeners[t.method];e&&Array.isArray(e)&&e.length&&e.forEach(function(e){e(t.params)})}},protocol="ws://",host="localhost",endpoint="/jsonrpc",port=80,makeWebsocketAddress=function(e){return[e&&e.protocol||protocol,e&&e.host||host,":"+(e&&e.port||port),e&&e.endpoint||endpoint,e&&e.token?"?token="+e.token:null].join("")},protocols="notification",socket=null,connect=function(r){return new Promise(function(t,n){if(socket&&1===socket.readyState)return t(socket);if(socket&&0===socket.readyState){return socket.addEventListener("open",function e(){socket.removeEventListener("open",e),t(socket)})}if(null===socket){(socket=new WebSocket(makeWebsocketAddress(r),protocols)).addEventListener("message",function(e){requestQueueResolver(e.data)}),socket.addEventListener("message",function(e){notificationListener(e.data)}),socket.addEventListener("error",function(){notificationListener({method:"client.ThunderJS.events.error"}),socket=null});var e=function(e){socket=null,n(e)};socket.addEventListener("close",e),socket.addEventListener("open",function(){notificationListener({method:"client.ThunderJS.events.connect"}),socket.removeEventListener("close",e),socket.addEventListener("close",function(){notificationListener({method:"client.ThunderJS.events.disconnect"}),socket=null}),t(socket)})}else socket=null,n("Socket error")})},makeBody=function(e,t,n,r,o){r&&delete r.version;var i={jsonrpc:"2.0",id:e,method:[t,o,n].join(".")};return!r&&!1!==r||"object"===_typeof(r)&&0===Object.keys(r).length||(i.params=r),i},getVersion=function(e,t,n){var r;return(r=n&&n.version)?r:e&&(e[t]||e.default)||1},id=0,makeId=function(){return id+=1},execRequest=function(e,t){return connect(e).then(function(e){e.send(JSON.stringify(t))})},API=function(u){return{request:function(i,s,c){return new Promise(function(e,t){var n=makeId(),r=getVersion(u.versions,i,c),o=makeBody(n,i,s,c,r);u.debug&&(console.log(" "),console.log("API REQUEST:"),console.log(JSON.stringify(o,null,2)),console.log(" ")),requestsQueue[n]={body:o,resolve:e,reject:t},execRequest(u,o).catch(function(e){t(e)})})}}},DeviceInfo={freeRam:function(e){return this.call("systeminfo",e).then(function(e){return e.freeram})},version:function(e){return this.call("systeminfo",e).then(function(e){return e.version})}},plugins={DeviceInfo:DeviceInfo};function listener(t,n,e){var r=this,o=register.call(this,t,n,e);return{dispose:function(){var e=makeListenerId(t,n);listeners[e].splice(o,1),0===listeners[e].length&&unregister.call(r,t,n)}}}var api,makeListenerId=function(e,t){return["client",e,"events",t].join(".")},register=function(e,t,n){var r=makeListenerId(e,t);if(!listeners[r]&&(listeners[r]=[],"ThunderJS"!==e)){var o={event:t,id:r.split(".").slice(0,-1).join(".")};this.api.request(e,"register",o)}return listeners[r].push(n),listeners[r].length-1},unregister=function(e,t){var n=makeListenerId(e,t);if(delete listeners[n],"ThunderJS"!==e){var r={event:t,id:n.split(".").slice(0,-1).join(".")};this.api.request(e,"unregister",r)}},thunderJS=function(e){return globalThis.thunder&&"function"==typeof globalThis.thunder.token&&(e.token=globalThis.thunder.token()),api=API(e),wrapper(_objectSpread2({},thunder(e),{},plugins))},resolve=function(n,e){"object"===_typeof(n)&&("object"!==_typeof(n)||n.then&&"function"==typeof n.then)||(n=new Promise(function(e,t){(n instanceof Error==!1?e:t)(n)}));var t="function"==typeof e[e.length-1]?e[e.length-1]:null;if(!t)return n;n.then(function(e){return t(null,e)}).catch(function(e){return t(e)})},thunder=function n(e){return{options:e,plugin:!1,call:function(){var e=Array.prototype.slice.call(arguments);this.plugin&&e[0]!==this.plugin&&e.unshift(this.plugin);var t=e[0],n=e[1];return"function"==typeof this[t][n]?this[t][n](e[2]):this.api.request.apply(this,e)},registerPlugin:function(e,t){this[e]=wrapper(Object.assign(Object.create(n),t,{plugin:e}))},subscribe:function(){},on:function(){var e=Array.prototype.slice.call(arguments);return-1!==["connect","disconnect","error"].indexOf(e[0])?e.unshift("ThunderJS"):this.plugin&&e[0]!==this.plugin&&e.unshift(this.plugin),listener.apply(this,e)},once:function(){console.log("todo ...")}}},wrapper=function e(t){return new Proxy(t,{get:function(r,o){var i=r[o];return"api"===o?api:void 0!==i?"function"==typeof i?-1<["on","once","subscribe"].indexOf(o)?function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return i.apply(this,t)}:function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return resolve(i.apply(this,t),t)}:"object"===_typeof(i)?e(Object.assign(Object.create(thunder(r.options)),i,{plugin:o})):i:!1===r.plugin?e(Object.assign(Object.create(thunder(r.options)),{},{plugin:o})):function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return t.unshift(o),r.call.apply(this,t)}}})};module.exports=thunderJS;
+let ws = null;
+if (typeof WebSocket !== 'undefined') {
+  ws = WebSocket;
+}
+var ws_1 = ws;
+
+const requestsQueue = {};
+const listeners = {};
+
+var requestQueueResolver = data => {
+  if (typeof data === 'string') {
+    data = JSON.parse(data.normalize().replace(/\\x([0-9A-Fa-f]{2})/g, ''));
+  }
+  if (data.id) {
+    const request = requestsQueue[data.id];
+    if (request) {
+      if ('result' in data) request.resolve(data.result);
+      else request.reject(data.error);
+      delete requestsQueue[data.id];
+    } else {
+      console.log('no pending request found with id ' + data.id);
+    }
+  }
+};
+
+var notificationListener = data => {
+  if (typeof data === 'string') {
+    data = JSON.parse(data.normalize().replace(/\\x([0-9A-Fa-f]{2})/g, ''));
+  }
+  if (!data.id && data.method) {
+    const callbacks = listeners[data.method];
+    if (callbacks && Array.isArray(callbacks) && callbacks.length) {
+      callbacks.forEach(callback => {
+        callback(data.params);
+      });
+    }
+  }
+};
+
+const protocol = 'ws://';
+const host = 'localhost';
+const endpoint = '/jsonrpc';
+const port = 80;
+var makeWebsocketAddress = options => {
+  return [
+    (options && options.protocol) || protocol,
+    (options && options.host) || host,
+    ':' + ((options && options.port) || port),
+    (options && options.endpoint) || endpoint,
+    options && options.token ? '?token=' + options.token : null,
+  ].join('')
+};
+
+const protocols = 'notification';
+let socket = null;
+var connect = options => {
+  return new Promise((resolve, reject) => {
+    if (socket && socket.readyState === 1) return resolve(socket)
+    if (socket && socket.readyState === 0) {
+      const waitForOpen = () => {
+        socket.removeEventListener('open', waitForOpen);
+        resolve(socket);
+      };
+      return socket.addEventListener('open', waitForOpen)
+    }
+    if (socket === null) {
+      socket = new ws_1(makeWebsocketAddress(options), protocols);
+      socket.addEventListener('message', message => {
+        requestQueueResolver(message.data);
+      });
+      socket.addEventListener('message', message => {
+        notificationListener(message.data);
+      });
+      socket.addEventListener('error', () => {
+        notificationListener({
+          method: 'client.ThunderJS.events.error',
+        });
+        socket = null;
+      });
+      const handleConnectClosure = event => {
+        socket = null;
+        reject(event);
+      };
+      socket.addEventListener('close', handleConnectClosure);
+      socket.addEventListener('open', () => {
+        notificationListener({
+          method: 'client.ThunderJS.events.connect',
+        });
+        socket.removeEventListener('close', handleConnectClosure);
+        socket.addEventListener('close', () => {
+          notificationListener({
+            method: 'client.ThunderJS.events.disconnect',
+          });
+          socket = null;
+        });
+        resolve(socket);
+      });
+    } else {
+      socket = null;
+      reject('Socket error');
+    }
+  })
+};
+
+var makeBody = (requestId, plugin, method, params, version) => {
+  params ? delete params.version : null;
+  const body = {
+    jsonrpc: '2.0',
+    id: requestId,
+    method: [plugin, version, method].join('.'),
+  };
+  params || params === false
+    ?
+      typeof params === 'object' && Object.keys(params).length === 0
+      ? null
+      : (body.params = params)
+    : null;
+  return body
+};
+
+var getVersion = (versionsConfig, plugin, params) => {
+  const defaultVersion = 1;
+  let version;
+  if ((version = params && params.version)) {
+    return version
+  }
+  return versionsConfig
+    ? versionsConfig[plugin] || versionsConfig.default || defaultVersion
+    : defaultVersion
+};
+
+let id = 0;
+var makeId = () => {
+  id = id + 1;
+  return id
+};
+
+var execRequest = (options, body) => {
+  return connect(options).then(connection => {
+    connection.send(JSON.stringify(body));
+  })
+};
+
+var API = options => {
+  return {
+    request(plugin, method, params) {
+      return new Promise((resolve, reject) => {
+        const requestId = makeId();
+        const version = getVersion(options.versions, plugin, params);
+        const body = makeBody(requestId, plugin, method, params, version);
+        if (options.debug) {
+          console.log(' ');
+          console.log('API REQUEST:');
+          console.log(JSON.stringify(body, null, 2));
+          console.log(' ');
+        }
+        requestsQueue[requestId] = {
+          body,
+          resolve,
+          reject,
+        };
+        execRequest(options, body).catch(m => {
+          reject(m);
+        });
+      })
+    },
+  }
+};
+
+var DeviceInfo = {
+  freeRam(params) {
+    return this.call('systeminfo', params).then(res => {
+      return res.freeram
+    })
+  },
+  version(params) {
+    return this.call('systeminfo', params).then(res => {
+      return res.version
+    })
+  },
+};
+
+var plugins = {
+  DeviceInfo,
+};
+
+function listener(plugin, event, callback) {
+  const thunder = this;
+  const index = register.call(this, plugin, event, callback);
+  return {
+    dispose() {
+      const listener_id = makeListenerId(plugin, event);
+      listeners[listener_id].splice(index, 1);
+      if (listeners[listener_id].length === 0) {
+        unregister.call(thunder, plugin, event);
+      }
+    },
+  }
+}
+const makeListenerId = (plugin, event) => {
+  return ['client', plugin, 'events', event].join('.')
+};
+const register = function(plugin, event, callback) {
+  const listener_id = makeListenerId(plugin, event);
+  if (!listeners[listener_id]) {
+    listeners[listener_id] = [];
+    if (plugin !== 'ThunderJS') {
+      const method = 'register';
+      const request_id = listener_id
+        .split('.')
+        .slice(0, -1)
+        .join('.');
+      const params = {
+        event,
+        id: request_id,
+      };
+      this.api.request(plugin, method, params);
+    }
+  }
+  listeners[listener_id].push(callback);
+  return listeners[listener_id].length - 1
+};
+const unregister = function(plugin, event) {
+  const listener_id = makeListenerId(plugin, event);
+  delete listeners[listener_id];
+  if (plugin !== 'ThunderJS') {
+    const method = 'unregister';
+    const request_id = listener_id
+      .split('.')
+      .slice(0, -1)
+      .join('.');
+    const params = {
+      event,
+      id: request_id,
+    };
+    this.api.request(plugin, method, params);
+  }
+};
+
+let api;
+var thunderJS = options => {
+  if (globalThis.thunder && typeof globalThis.thunder.token === 'function') {
+    options.token = globalThis.thunder.token();
+  }
+  api = API(options);
+  return wrapper({ ...thunder(options), ...plugins })
+};
+const resolve = (result, args) => {
+  if (
+    typeof result !== 'object' ||
+    (typeof result === 'object' && (!result.then || typeof result.then !== 'function'))
+  ) {
+    result = new Promise((resolve, reject) => {
+      result instanceof Error === false ? resolve(result) : reject(result);
+    });
+  }
+  const cb = typeof args[args.length - 1] === 'function' ? args[args.length - 1] : null;
+  if (cb) {
+    result.then(res => cb(null, res)).catch(err => cb(err));
+  } else {
+    return result
+  }
+};
+const thunder = options => ({
+  options,
+  plugin: false,
+  call() {
+    const args = [...arguments];
+    if (this.plugin) {
+      if (args[0] !== this.plugin) {
+        args.unshift(this.plugin);
+      }
+    }
+    const plugin = args[0];
+    const method = args[1];
+    if (typeof this[plugin][method] == 'function') {
+      return this[plugin][method](args[2])
+    }
+    return this.api.request.apply(this, args)
+  },
+  registerPlugin(name, plugin) {
+    this[name] = wrapper(Object.assign(Object.create(thunder), plugin, { plugin: name }));
+  },
+  subscribe() {
+  },
+  on() {
+    const args = [...arguments];
+    if (['connect', 'disconnect', 'error'].indexOf(args[0]) !== -1) {
+      args.unshift('ThunderJS');
+    } else {
+      if (this.plugin) {
+        if (args[0] !== this.plugin) {
+          args.unshift(this.plugin);
+        }
+      }
+    }
+    return listener.apply(this, args)
+  },
+  once() {
+    console.log('todo ...');
+  },
+});
+const wrapper = obj => {
+  return new Proxy(obj, {
+    get(target, propKey) {
+      const prop = target[propKey];
+      if (propKey === 'api') {
+        return api
+      }
+      if (typeof prop !== 'undefined') {
+        if (typeof prop === 'function') {
+          if (['on', 'once', 'subscribe'].indexOf(propKey) > -1) {
+            return function(...args) {
+              return prop.apply(this, args)
+            }
+          }
+          return function(...args) {
+            return resolve(prop.apply(this, args), args)
+          }
+        }
+        if (typeof prop === 'object') {
+          return wrapper(
+            Object.assign(Object.create(thunder(target.options)), prop, { plugin: propKey })
+          )
+        }
+        return prop
+      } else {
+        if (target.plugin === false) {
+          return wrapper(
+            Object.assign(Object.create(thunder(target.options)), {}, { plugin: propKey })
+          )
+        }
+        return function(...args) {
+          args.unshift(propKey);
+          return target.call.apply(this, args)
+        }
+      }
+    },
+  })
+};
+
+export default thunderJS;
