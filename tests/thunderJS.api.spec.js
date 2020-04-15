@@ -26,12 +26,19 @@ import * as ws from 'ws'
 
 let wsStub
 
-test('Setup - thunderJS - api', assert => {
-  wsStub = sinon.stub(ws, 'default').callsFake(address => {
-    return {
+const makeWsStub = () => {
+  return sinon.stub(ws, 'default').callsFake(address => {
+    const websocket = {
       addEventListener() {},
+      readyState: 1,
     }
+
+    return websocket
   })
+}
+
+test('Setup - thunderJS - api', assert => {
+  wsStub = makeWsStub()
 
   assert.end()
 })
@@ -68,11 +75,10 @@ test('makeWebsocketAddress - unit test', assert => {
   assert.end()
 })
 
-test('thunderJS - api - custom websocket connection', assert => {
-  wsStub.resetHistory()
-
+test('thunderJS - api - window.thunder.token() websocket connection', assert => {
   // make thunder.token() available
-  globalThis.thunder = {
+  global.window = {}
+  window.thunder = {
     token() {
       return 'thundertoken123'
     },
@@ -83,6 +89,28 @@ test('thunderJS - api - custom websocket connection', assert => {
     port: 2020,
     endpoint: '/api',
     protocol: 'wss://',
+  }
+  let thunderJS = ThunderJS(options)
+
+  // make a call, to initiate a (stubbed) websocket connection
+  thunderJS.DeviceInfo.systeminfo()
+
+  assert.ok(
+    wsStub.calledWith('wss://192.168.1.100:2020/api?token=thundertoken123'),
+    'Websocket with default custom address should be initiated'
+  )
+
+  delete global.window
+  assert.end()
+})
+
+test('thunderJS - api - options.token websocket connection', assert => {
+  const options = {
+    host: '192.168.1.100',
+    port: 2020,
+    endpoint: '/api',
+    protocol: 'wss://',
+    token: 'thundertoken123',
   }
   let thunderJS = ThunderJS(options)
 
