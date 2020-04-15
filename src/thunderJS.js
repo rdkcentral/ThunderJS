@@ -20,6 +20,7 @@
 import API from './api'
 import plugins from './plugins/index'
 import listener from './listener'
+import '@ungap/global-this'
 
 let api
 
