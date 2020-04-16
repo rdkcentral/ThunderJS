@@ -20,14 +20,18 @@
 import API from './api'
 import plugins from './plugins/index'
 import listener from './listener'
-import '@ungap/global-this'
 
 let api
 
 export default options => {
   // add extra option with token when thunder.token() is available
-  if (globalThis.thunder && typeof globalThis.thunder.token === 'function') {
-    options.token = globalThis.thunder.token()
+  if (
+    options.token === undefined &&
+    typeof window !== 'undefined' &&
+    window.thunder &&
+    typeof window.thunder.token === 'function'
+  ) {
+    options.token = window.thunder.token()
   }
 
   api = API(options)

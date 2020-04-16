@@ -4,7 +4,7 @@
     "Metrological, Wouter <wouter@metrological.com>"
   ],
   "name": "ThunderJS",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "license": "apache",
   "browser": "dist/thunderJS.js",
   "main": "src/thunderJS.js",
@@ -60,7 +60,6 @@
     "tape": "^4.13.2"
   },
   "dependencies": {
-    "@ungap/global-this": "^0.3.1",
     "ws": "^7.2.3"
   }
 }

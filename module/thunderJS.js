@@ -256,25 +256,15 @@ const unregister = function(plugin, event) {
   }
 };
 
-(function (Object) {
-  typeof globalThis !== 'object' && (
-    this ?
-      get() :
-      (Object.defineProperty(Object.prototype, '_T_', {
-        configurable: true,
-        get: get
-      }), _T_)
-  );
-  function get() {
-    this.globalThis = this;
-    delete Object.prototype._T_;
-  }
-}(Object));
-
 let api;
 var thunderJS = options => {
-  if (globalThis.thunder && typeof globalThis.thunder.token === 'function') {
-    options.token = globalThis.thunder.token();
+  if (
+    options.token === undefined &&
+    typeof window !== 'undefined' &&
+    window.thunder &&
+    typeof window.thunder.token === 'function'
+  ) {
+    options.token = window.thunder.token();
   }
   api = API(options);
   return wrapper({ ...thunder(options), ...plugins })

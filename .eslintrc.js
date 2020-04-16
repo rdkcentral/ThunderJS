@@ -41,6 +41,6 @@ module.exports = {
     sourceType: "module",
   },
   globals: {
-    globalThis: true,
+    window: true,
   }
 }
