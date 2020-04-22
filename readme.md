@@ -13,9 +13,9 @@ ThunderJS makes is easy to make API calls to Thunder (WPEframework) over a Webso
 ThunderJS can be installed into your project via _NPM_ or _Yarn_, installing directly from GitHub:
 
 ```Shell
-npm install github:WebPlatformForEmbedded/ThunderJS
+npm install github:rdkcentral/ThunderJS
 // or
-yarn add github:WebPlatformForEmbedded/ThunderJS
+yarn add github:rdkcentral/ThunderJS
 ```
 
 Next you can `import` or `require` the ThunderJS dependency into your own script and start implementing it from there.
