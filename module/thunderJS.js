@@ -209,15 +209,15 @@ var plugins = {
   DeviceInfo,
 };
 
-function listener(plugin, event, callback, error) {
+function listener(plugin, event, callback, errorCallback) {
   const thunder = this;
-  const index = register.call(this, plugin, event, callback, error);
+  const index = register.call(this, plugin, event, callback, errorCallback);
   return {
     dispose() {
       const listener_id = makeListenerId(plugin, event);
       listeners[listener_id].splice(index, 1);
       if (listeners[listener_id].length === 0) {
-        unregister.call(thunder, plugin, event, error);
+        unregister.call(thunder, plugin, event, errorCallback);
       }
     },
   }
@@ -225,7 +225,7 @@ function listener(plugin, event, callback, error) {
 const makeListenerId = (plugin, event) => {
   return ['client', plugin, 'events', event].join('.')
 };
-const register = function(plugin, event, callback, error) {
+const register = function(plugin, event, callback, errorCallback) {
   const listener_id = makeListenerId(plugin, event);
   if (!listeners[listener_id]) {
     listeners[listener_id] = [];
@@ -240,14 +240,14 @@ const register = function(plugin, event, callback, error) {
         id: request_id,
       };
       this.api.request(plugin, method, params).catch(e => {
-        if (typeof error === 'function') error(e.message);
+        if (typeof errorCallback === 'function') errorCallback(e.message);
       });
     }
   }
   listeners[listener_id].push(callback);
   return listeners[listener_id].length - 1
 };
-const unregister = function(plugin, event, error) {
+const unregister = function(plugin, event, errorCallback) {
   const listener_id = makeListenerId(plugin, event);
   delete listeners[listener_id];
   if (plugin !== 'ThunderJS') {
@@ -261,7 +261,7 @@ const unregister = function(plugin, event, error) {
       id: request_id,
     };
     this.api.request(plugin, method, params).catch(e => {
-      if (typeof error === 'function') error(e.message);
+      if (typeof errorCallback === 'function') errorCallback(e.message);
     });
   }
 };
