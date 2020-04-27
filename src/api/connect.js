@@ -46,8 +46,16 @@ export default options => {
     if (socket === null) {
       socket = new WebSocket(makeWebsocketAddress(options), protocols)
       socket.addEventListener('message', message => {
+        if (options.debug) {
+          console.log(' ')
+          console.log('API REPONSE:')
+          console.log(JSON.stringify(message.data, null, 2))
+          console.log(' ')
+        }
+
         requestQueueResolver(message.data)
       })
+
       socket.addEventListener('message', message => {
         notificationListener(message.data)
       })
