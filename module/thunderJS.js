@@ -85,6 +85,12 @@ var connect = options => {
     if (socket === null) {
       socket = new ws_1(makeWebsocketAddress(options), protocols);
       socket.addEventListener('message', message => {
+        if (options.debug) {
+          console.log(' ');
+          console.log('API REPONSE:');
+          console.log(JSON.stringify(message.data, null, 2));
+          console.log(' ');
+        }
         requestQueueResolver(message.data);
       });
       socket.addEventListener('message', message => {
@@ -178,8 +184,8 @@ var API = options => {
           resolve,
           reject,
         };
-        execRequest(options, body).catch(m => {
-          reject(m);
+        execRequest(options, body).catch(e => {
+          reject(e);
         });
       })
     },
@@ -203,15 +209,15 @@ var plugins = {
   DeviceInfo,
 };
 
-function listener(plugin, event, callback) {
+function listener(plugin, event, callback, error) {
   const thunder = this;
-  const index = register.call(this, plugin, event, callback);
+  const index = register.call(this, plugin, event, callback, error);
   return {
     dispose() {
       const listener_id = makeListenerId(plugin, event);
       listeners[listener_id].splice(index, 1);
       if (listeners[listener_id].length === 0) {
-        unregister.call(thunder, plugin, event);
+        unregister.call(thunder, plugin, event, error);
       }
     },
   }
@@ -219,7 +225,7 @@ function listener(plugin, event, callback) {
 const makeListenerId = (plugin, event) => {
   return ['client', plugin, 'events', event].join('.')
 };
-const register = function(plugin, event, callback) {
+const register = function(plugin, event, callback, error) {
   const listener_id = makeListenerId(plugin, event);
   if (!listeners[listener_id]) {
     listeners[listener_id] = [];
@@ -233,13 +239,15 @@ const register = function(plugin, event, callback) {
         event,
         id: request_id,
       };
-      this.api.request(plugin, method, params);
+      this.api.request(plugin, method, params).catch(e => {
+        if (typeof error === 'function') error(e.message);
+      });
     }
   }
   listeners[listener_id].push(callback);
   return listeners[listener_id].length - 1
 };
-const unregister = function(plugin, event) {
+const unregister = function(plugin, event, error) {
   const listener_id = makeListenerId(plugin, event);
   delete listeners[listener_id];
   if (plugin !== 'ThunderJS') {
@@ -252,7 +260,9 @@ const unregister = function(plugin, event) {
       event,
       id: request_id,
     };
-    this.api.request(plugin, method, params);
+    this.api.request(plugin, method, params).catch(e => {
+      if (typeof error === 'function') error(e.message);
+    });
   }
 };
 

@@ -239,7 +239,7 @@ Thunder (WPEframework) broadcasts notifications when events ocur in the system. 
 
 ThunderJS makes it easy to subscribe to specific events, and execute a _callback-function_ upon every notification of each event.
 
-Simply define a listener, passing in the `plugin` as a first argument and the `event` as a second. As a third argument you can pass in the callback function (that receives the `notification` as an argument) every time a notification is received.
+Simply define a listener, passing in the `plugin` as a first argument and the `event` as a second. As a third argument you can pass in the callback function (that receives the `notification` as an argument) every time a notification is received. Optionally a fourth `error` callback can be provided which will be called when the notification failed to register.
 
 ```js
 const listener = thunderJS.on('Controller', 'statechange', (notification) => {
@@ -288,6 +288,35 @@ const listener2 = thunderJS.Controller.on('statechange', (notification) => {
   console.log('Second callback!', notification)
 })
 ```
+
+If the event does not exist (or there is another thunder issue) the error callback will be called.
+
+```js
+const errorListener = thunderJS.Controller.on('thisdoesnotexist', () => {}, (error) => {
+  console.log('This is an error callback', notification)
+}))
+```
+#### ThunderJS connection events
+
+Aside from the Thunder provided event system the same syntax can be used to listen for the `connect`, `disconnect` or `error` events which will be fired if there are state changes on the socket connection between ThunderJS and Thunder.
+
+For example:
+
+```js
+thunderJS.on('connect', () => {
+  console.log('Connect event!')
+})
+
+thunderJS.on('disconnect', () => {
+  console.log('Disconnect event!')
+})
+
+thunderJS.on('error', () => {
+  console.log('Error event!')
+})
+```
+
+The `connect`, `disconnect` and `error` events are tied to the websocket events. For more information please see the [browser](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) or [nodejs](https://github.com/websockets/ws/blob/master/doc/ws.md#class-websocket) documentation respectively.
 
 > **Proposal / Work in progress!**
 
