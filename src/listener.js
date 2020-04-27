@@ -19,11 +19,11 @@
 
 import { listeners } from './store'
 
-export default function(plugin, event, callback) {
+export default function(plugin, event, callback, errorCallback) {
   const thunder = this
 
   // register and keep track of the index
-  const index = register.call(this, plugin, event, callback)
+  const index = register.call(this, plugin, event, callback, errorCallback)
 
   return {
     dispose() {
@@ -31,7 +31,7 @@ export default function(plugin, event, callback) {
       listeners[listener_id].splice(index, 1)
 
       if (listeners[listener_id].length === 0) {
-        unregister.call(thunder, plugin, event)
+        unregister.call(thunder, plugin, event, errorCallback)
       }
     },
   }
@@ -42,7 +42,7 @@ const makeListenerId = (plugin, event) => {
   return ['client', plugin, 'events', event].join('.')
 }
 
-const register = function(plugin, event, callback) {
+const register = function(plugin, event, callback, errorCallback) {
   const listener_id = makeListenerId(plugin, event)
 
   // no listener registered for this plugin/event yet
@@ -65,7 +65,10 @@ const register = function(plugin, event, callback) {
         event,
         id: request_id,
       }
-      this.api.request(plugin, method, params)
+
+      this.api.request(plugin, method, params).catch(e => {
+        if (typeof errorCallback === 'function') errorCallback(e.message)
+      })
     }
   }
 
@@ -76,7 +79,7 @@ const register = function(plugin, event, callback) {
   return listeners[listener_id].length - 1
 }
 
-const unregister = function(plugin, event) {
+const unregister = function(plugin, event, errorCallback) {
   const listener_id = makeListenerId(plugin, event)
 
   delete listeners[listener_id]
@@ -96,6 +99,8 @@ const unregister = function(plugin, event) {
       event,
       id: request_id,
     }
-    this.api.request(plugin, method, params)
+    this.api.request(plugin, method, params).catch(e => {
+      if (typeof errorCallback === 'function') errorCallback(e.message)
+    })
   }
 }

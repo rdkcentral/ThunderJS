@@ -199,6 +199,31 @@ test('thunderJS - notifications - register a mutiple listeners or the same event
   assert.end()
 })
 
+// should execute callback each time when notification listener is called
+test('thunderJS - notifications - error on invalid event', assert => {
+  resetStubsAndSpies()
+  let thunderJS = ThunderJS(options)
+
+  const successCallbackSpy = sinon.spy()
+  const errorCallbackSpy = sinon.spy()
+
+  thunderJS.WebKitBrowser.on('invalidevent', successCallbackSpy, errorCallbackSpy)
+
+  API.requestQueueResolver({
+    id: 1,
+    error: {
+      code: -32603,
+      message: 'Could not access requested service',
+    },
+  })
+
+  setTimeout(() => {
+    assert.ok(successCallbackSpy.callCount === 0, 'Notification should not be recevied')
+    assert.ok(errorCallbackSpy.callCount === 1, 'Error Callback should be called once')
+    assert.end()
+  }, 250)
+})
+
 test('Teardown - thunderJS - calls', assert => {
   makeBodySpy.restore()
   apiRequestSpy.restore()
