@@ -209,24 +209,27 @@ var plugins = {
   DeviceInfo,
 };
 
-function listener(plugin, event, callback, errorCallback) {
+function listener(plugin, listenerArg, callback, errorCallback) {
   const thunder = this;
-  const index = register.call(this, plugin, event, callback, errorCallback);
+  var listenerCfg = typeof listenerArg == "string" ? { event: listenerArg } : listenerArg;
+  listenerCfg.prefix = listenerCfg.prefix || "client";
+  listenerCfg.suffix = listenerCfg.suffix || "events";
+  const index = register.call(this, plugin, listenerCfg, callback, errorCallback);
   return {
     dispose() {
-      const listener_id = makeListenerId(plugin, event);
+      const listener_id = makeListenerId(plugin, listenerCfg);
       listeners[listener_id].splice(index, 1);
       if (listeners[listener_id].length === 0) {
-        unregister.call(thunder, plugin, event, errorCallback);
+        unregister.call(thunder, plugin, listenerCfg, errorCallback);
       }
     },
   }
 }
-const makeListenerId = (plugin, event) => {
-  return ['client', plugin, 'events', event].join('.')
+const makeListenerId = (plugin, listenerCfg) => {
+  return [listenerCfg.prefix, plugin, listenerCfg.suffix, listenerCfg.event].join('.')
 };
-const register = function(plugin, event, callback, errorCallback) {
-  const listener_id = makeListenerId(plugin, event);
+const register = function(plugin, listenerCfg, callback, errorCallback) {
+  const listener_id = makeListenerId(plugin, listenerCfg);
   if (!listeners[listener_id]) {
     listeners[listener_id] = [];
     if (plugin !== 'ThunderJS') {
@@ -236,7 +239,7 @@ const register = function(plugin, event, callback, errorCallback) {
         .slice(0, -1)
         .join('.');
       const params = {
-        event,
+        event: listenerCfg.event,
         id: request_id,
       };
       this.api.request(plugin, method, params).catch(e => {
@@ -247,8 +250,8 @@ const register = function(plugin, event, callback, errorCallback) {
   listeners[listener_id].push(callback);
   return listeners[listener_id].length - 1
 };
-const unregister = function(plugin, event, errorCallback) {
-  const listener_id = makeListenerId(plugin, event);
+const unregister = function(plugin, listenerCfg, errorCallback) {
+  const listener_id = makeListenerId(plugin, listenerCfg);
   delete listeners[listener_id];
   if (plugin !== 'ThunderJS') {
     const method = 'unregister';
@@ -257,7 +260,7 @@ const unregister = function(plugin, event, errorCallback) {
       .slice(0, -1)
       .join('.');
     const params = {
-      event,
+      event: listenerCfg.event,
       id: request_id,
     };
     this.api.request(plugin, method, params).catch(e => {

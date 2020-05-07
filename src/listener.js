@@ -19,31 +19,35 @@
 
 import { listeners } from './store'
 
-export default function(plugin, event, callback, errorCallback) {
+export default function(plugin, listenerArg, callback, errorCallback) {
   const thunder = this
+  // listenerArg can be only the event string or an object that contains the listener prefix and suffix as well
+  var listenerCfg = typeof listenerArg == "string" ? { event: listenerArg } : listenerArg;
+  listenerCfg.prefix = listenerCfg.prefix || "client";
+  listenerCfg.suffix = listenerCfg.suffix || "events";
 
   // register and keep track of the index
-  const index = register.call(this, plugin, event, callback, errorCallback)
+  const index = register.call(this, plugin, listenerCfg, callback, errorCallback)
 
   return {
     dispose() {
-      const listener_id = makeListenerId(plugin, event)
+      const listener_id = makeListenerId(plugin, listenerCfg)
       listeners[listener_id].splice(index, 1)
 
       if (listeners[listener_id].length === 0) {
-        unregister.call(thunder, plugin, event, errorCallback)
+        unregister.call(thunder, plugin, listenerCfg, errorCallback)
       }
     },
   }
 }
 
 // construct a unique id for the listener
-const makeListenerId = (plugin, event) => {
-  return ['client', plugin, 'events', event].join('.')
+const makeListenerId = (plugin, listenerCfg) => {
+  return [listenerCfg.prefix, plugin, listenerCfg.suffix, listenerCfg.event].join('.')
 }
 
-const register = function(plugin, event, callback, errorCallback) {
-  const listener_id = makeListenerId(plugin, event)
+const register = function(plugin, listenerCfg, callback, errorCallback) {
+  const listener_id = makeListenerId(plugin, listenerCfg)
 
   // no listener registered for this plugin/event yet
   if (!listeners[listener_id]) {
@@ -62,7 +66,7 @@ const register = function(plugin, event, callback, errorCallback) {
         .join('.')
 
       const params = {
-        event,
+        event: listenerCfg.event,
         id: request_id,
       }
 
@@ -79,8 +83,8 @@ const register = function(plugin, event, callback, errorCallback) {
   return listeners[listener_id].length - 1
 }
 
-const unregister = function(plugin, event, errorCallback) {
-  const listener_id = makeListenerId(plugin, event)
+const unregister = function(plugin, listenerCfg, errorCallback) {
+  const listener_id = makeListenerId(plugin, listenerCfg)
 
   delete listeners[listener_id]
 
@@ -96,7 +100,7 @@ const unregister = function(plugin, event, errorCallback) {
       .join('.')
 
     const params = {
-      event,
+      event: listenerCfg.event,
       id: request_id,
     }
     this.api.request(plugin, method, params).catch(e => {
