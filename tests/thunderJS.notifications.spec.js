@@ -224,6 +224,25 @@ test('thunderJS - notifications - error on invalid event', assert => {
   }, 250)
 })
 
+// should execute callback each time when notification listener is called
+test('thunderJS - notifications - call dispose twice', assert => {
+  resetStubsAndSpies()
+  let thunderJS = ThunderJS(options)
+
+  const TestListener = thunderJS.FooPlugin.on(
+    'bar',
+    () => {},
+    () => {}
+  )
+
+  assert.doesNotThrow(TestListener.dispose, 'First dispose should work')
+  assert.doesNotThrow(
+    TestListener.dispose,
+    'Second dispose should not an error, even though it no longer exists'
+  )
+  assert.end()
+})
+
 test('Teardown - thunderJS - calls', assert => {
   makeBodySpy.restore()
   apiRequestSpy.restore()

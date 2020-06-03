@@ -215,6 +215,7 @@ function listener(plugin, event, callback, errorCallback) {
   return {
     dispose() {
       const listener_id = makeListenerId(plugin, event);
+      if (listeners[listener_id] === undefined) return
       listeners[listener_id].splice(index, 1);
       if (listeners[listener_id].length === 0) {
         unregister.call(thunder, plugin, event, errorCallback);
