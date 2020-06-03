@@ -28,6 +28,9 @@ export default function(plugin, event, callback, errorCallback) {
   return {
     dispose() {
       const listener_id = makeListenerId(plugin, event)
+      //early return if the listener is already deleted and someone is calling dispose twice
+      if (listeners[listener_id] === undefined) return
+
       listeners[listener_id].splice(index, 1)
 
       if (listeners[listener_id].length === 0) {
