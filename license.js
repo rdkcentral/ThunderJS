@@ -1,7 +1,7 @@
 export default 'If not stated otherwise in this file or this component\'s LICENSE file the \n\
 following copyright and licenses apply: \n\
 \n\
-Copyright <%= new Date().getFullYear() %> RDK Management \n\
+Copyright <%= new Date().getFullYear() %> Metrological \n\
 \n\
 Licensed under the Apache License, Version 2.0 (the License); \n\
 you may not use this file except in compliance with the License. \n\
