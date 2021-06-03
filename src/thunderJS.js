@@ -21,8 +21,6 @@ import API from './api'
 import plugins from './plugins/index'
 import listener from './listener'
 
-let api
-
 export default options => {
   // add extra option with token when thunder.token() is available
   if (
@@ -34,7 +32,6 @@ export default options => {
     options.token = window.thunder.token()
   }
 
-  api = API(options)
   return wrapper({ ...thunder(options), ...plugins })
 }
 
@@ -62,6 +59,7 @@ const resolve = (result, args) => {
 
 const thunder = options => ({
   options,
+  api: API(options),
   plugin: false,
   call() {
     // little trick to set the plugin name when calling from a plugin context (if not already set)
@@ -116,7 +114,7 @@ const wrapper = obj => {
 
       // return the initialized api object, when key is api
       if (propKey === 'api') {
-        return api
+        return target.api
       }
 
       if (typeof prop !== 'undefined') {

@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2020 Metrological
+ * Copyright 2021 Metrological
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -70,20 +70,27 @@ var makeWebsocketAddress = options => {
   ].join('')
 };
 
-const protocols = 'notification';
-let socket = null;
+let sockets = {};
 var connect = options => {
   return new Promise((resolve, reject) => {
+    let socketAddress = makeWebsocketAddress(options);
+    let socket = sockets[socketAddress];
     if (socket && socket.readyState === 1) return resolve(socket)
     if (socket && socket.readyState === 0) {
       const waitForOpen = () => {
+        let socket = sockets[makeWebsocketAddress(options)];
         socket.removeEventListener('open', waitForOpen);
         resolve(socket);
       };
       return socket.addEventListener('open', waitForOpen)
     }
-    if (socket === null) {
-      socket = new ws_1(makeWebsocketAddress(options), protocols);
+    if (socket == null) {
+      if (options.debug) {
+        console.log('Opening socket to ' + socketAddress);
+      }
+      let protocols = (options && options.protocol) || 'notification';
+      socket = new ws_1(socketAddress, protocols);
+      sockets[socketAddress] = socket;
       socket.addEventListener('message', message => {
         if (options.debug) {
           console.log(' ');
@@ -100,14 +107,15 @@ var connect = options => {
         notificationListener({
           method: 'client.ThunderJS.events.error',
         });
-        socket = null;
+        sockets[makeWebsocketAddress(options)] = null;
       });
       const handleConnectClosure = event => {
-        socket = null;
+        sockets[makeWebsocketAddress(options)] = null;
         reject(event);
       };
       socket.addEventListener('close', handleConnectClosure);
       socket.addEventListener('open', () => {
+        let socket = sockets[makeWebsocketAddress(options)];
         notificationListener({
           method: 'client.ThunderJS.events.connect',
         });
@@ -116,12 +124,12 @@ var connect = options => {
           notificationListener({
             method: 'client.ThunderJS.events.disconnect',
           });
-          socket = null;
+          sockets[makeWebsocketAddress(options)] = null;
         });
         resolve(socket);
       });
     } else {
-      socket = null;
+      sockets[makeWebsocketAddress(options)] = null;
       reject('Socket error');
     }
   })
@@ -267,7 +275,6 @@ const unregister = function(plugin, event, errorCallback) {
   }
 };
 
-let api;
 var thunderJS = options => {
   if (
     options.token === undefined &&
@@ -277,7 +284,6 @@ var thunderJS = options => {
   ) {
     options.token = window.thunder.token();
   }
-  api = API(options);
   return wrapper({ ...thunder(options), ...plugins })
 };
 const resolve = (result, args) => {
@@ -298,6 +304,7 @@ const resolve = (result, args) => {
 };
 const thunder = options => ({
   options,
+  api: API(options),
   plugin: false,
   call() {
     const args = [...arguments];
@@ -340,7 +347,7 @@ const wrapper = obj => {
     get(target, propKey) {
       const prop = target[propKey];
       if (propKey === 'api') {
-        return api
+        return target.api
       }
       if (typeof prop !== 'undefined') {
         if (typeof prop === 'function') {
