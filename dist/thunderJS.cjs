@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-let ws = null;
-if (typeof WebSocket !== 'undefined') {
-  ws = WebSocket;
-}
-var ws_1 = ws;
+'use strict';
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var WebSocket = _interopDefault(require('ws'));
 
 const requestsQueue = {};
 const listeners = {};
@@ -95,7 +95,7 @@ var connect = options => {
       if (options.debug) {
         console.log('Opening socket to ' + socketAddress);
       }
-      socket = new ws_1(socketAddress, (options && options.subprotocols) || 'notification');
+      socket = new WebSocket(socketAddress, (options && options.subprotocols) || 'notification');
       sockets[socketAddress] = socket;
       socket.addEventListener('message', message => {
         if (options.debug) {
@@ -392,4 +392,4 @@ const wrapper = obj => {
   })
 };
 
-export default thunderJS;
+module.exports = thunderJS;

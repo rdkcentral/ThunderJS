@@ -75,4 +75,45 @@ export default [
       }),
     ],
   },
+  {
+    input: './src/thunderJS.js',
+    output: {
+      file: './dist/thunderJS.cjs',
+      format: 'cjs',
+      name: 'ThunderJS',
+    },
+    external: [ 'ws' ],
+    plugins: [
+      commonjs(),
+      cleanup(),
+      license({
+        banner: {
+          content: LicenseBanner,
+        },
+      }),
+    ],
+  },
+  {
+    input: './examples/node/index.js',
+    output: {
+      file: './examples/node-cjs/index.cjs',
+      format: 'cjs',
+      name: 'example',
+    },
+    external: [ 'contra', 'chalk', 'inquirer', 'fs', '../..' ],
+    plugins: [
+      alias({
+        entries: {
+          '../../module/thunderJS': '../..'
+        }
+      }),
+      commonjs(),
+      cleanup(),
+      license({
+        banner: {
+          content: LicenseBanner,
+        },
+      }),
+    ],
+  },
 ]
