@@ -1,9 +1,10 @@
 {
   "author": "Michiel van der Geest <m.van.der.geest@metrological.com>",
   "name": "ThunderJS-Examples",
-  "version": "1.0.0",
   "license": "apache",
+  "version": "1.1.0",
   "dependencies": {
+    "ThunderJS": "file:..",
     "chalk": "^2.4.2",
     "contra": "^1.9.4",
     "esm": "^3.2.25",
@@ -12,6 +13,7 @@
   },
   "scripts": {
     "start:browser": "http-server ./browser -o",
-    "start:node": "node -r esm ./node/index.js"
+    "start:node": "node -r esm ./node/index.js",
+    "start:node-cjs": "node ./node-cjs/index.js"
   }
 }

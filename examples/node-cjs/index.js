@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-import Contra from 'contra'
-import Chalk from 'chalk'
-import Inquirer from 'inquirer'
-import fs from 'fs'
+const Contra = require('contra')
+const Chalk = require('chalk')
+const Inquirer = require('inquirer')
+const fs = require('fs')
 
-import ThunderJS from 'ThunderJS'
+const ThunderJS = require('ThunderJS')
 
 const delay = 2000
 let thunderJS

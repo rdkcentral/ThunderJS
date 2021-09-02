@@ -24,7 +24,7 @@ import license from 'rollup-plugin-license'
 import resolve from 'rollup-plugin-node-resolve'
 import { uglify } from 'rollup-plugin-uglify'
 import alias from '@rollup/plugin-alias'
-import cleanup from 'rollup-plugin-cleanup';
+import cleanup from 'rollup-plugin-cleanup'
 
 import LicenseBanner from './license.js'
 
@@ -56,7 +56,30 @@ export default [
   {
     input: './src/thunderJS.js',
     output: {
-      file: './module/thunderJS.js',
+      file: './dist/thunderJS.mjs',
+      name: 'ThunderJS',
+    },
+    plugins: [
+      alias({
+        entries: {
+          ws: path.join(__dirname, 'alias/ws.js'),
+        },
+      }),
+      resolve({ browser: true }),
+      commonjs(),
+      cleanup(),
+      license({
+        banner: {
+          content: LicenseBanner,
+        },
+      }),
+    ],
+  },
+  {
+    input: './src/thunderJS.js',
+    output: {
+      file: './dist/thunderJS.cjs',
+      format: 'cjs',
       name: 'ThunderJS',
     },
     plugins: [
