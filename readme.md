@@ -293,7 +293,7 @@ If the event does not exist (or there is another thunder issue) the error callba
 
 ```js
 const errorListener = thunderJS.Controller.on('thisdoesnotexist', () => {}, (error) => {
-  console.log('This is an error callback', notification)
+  console.log('This is an error callback', error)
 }))
 ```
 #### ThunderJS connection events
