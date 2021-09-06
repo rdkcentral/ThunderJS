@@ -126,7 +126,7 @@ var connect = options => {
         resolve(socket);
       });
     } else {
-      sockets[makeWebsocketAddress(options)] = null;
+      sockets[socketAddress] = null;
       reject('Socket error');
     }
   })
