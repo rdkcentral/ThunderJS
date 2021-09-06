@@ -23,11 +23,11 @@ import requestQueueResolver from './requestQueueResolver'
 import notificationListener from './notificationListener'
 import makeWebsocketAddress from './makeWebsocketAddress'
 
-let sockets = {};
+const sockets = {};
 
 export default options => {
   return new Promise((resolve, reject) => {
-    let socketAddress = makeWebsocketAddress(options)
+    const socketAddress = makeWebsocketAddress(options)
     let socket = sockets[socketAddress]
     //return socket
     if (socket && socket.readyState === 1) return resolve(socket)
@@ -36,7 +36,6 @@ export default options => {
     //FIXME OR FIXME NOT: we could throttle how many event listeners we allow while we're in "connecting" state
     if (socket && socket.readyState === 0) {
       const waitForOpen = () => {
-        let socket = sockets[makeWebsocketAddress(options)]
         socket.removeEventListener('open', waitForOpen)
         resolve(socket)
       }
@@ -49,8 +48,7 @@ export default options => {
       if (options.debug) { 
         console.log('Opening socket to ' + socketAddress)
       }
-      let protocols = (options && options.protocol) || 'notification'
-      socket = new WebSocket(socketAddress, protocols)
+      socket = new WebSocket(socketAddress, (options && options.subprotocols) || 'notification')
       sockets[socketAddress] = socket
       socket.addEventListener('message', message => {
         if (options.debug) {
@@ -71,20 +69,19 @@ export default options => {
         notificationListener({
           method: 'client.ThunderJS.events.error',
         })
-        sockets[makeWebsocketAddress(options)] = null
+        sockets[socketAddress] = null
       })
 
       // Browser always first error followed by a close, never just an error event
       // so lets look at close events to detect if it worked or not
       const handleConnectClosure = event => {
-        sockets[makeWebsocketAddress(options)] = null
+        sockets[socketAddress] = null
         reject(event)
       }
 
       socket.addEventListener('close', handleConnectClosure)
 
       socket.addEventListener('open', () => {
-        let socket = sockets[makeWebsocketAddress(options)]
         notificationListener({
           method: 'client.ThunderJS.events.connect',
         })
@@ -99,7 +96,7 @@ export default options => {
           })
 
           // cleanup the socket
-          sockets[makeWebsocketAddress(options)] = null
+          sockets[socketAddress] = null
         })
 
         resolve(socket)

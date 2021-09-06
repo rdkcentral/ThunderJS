@@ -70,15 +70,14 @@ var makeWebsocketAddress = options => {
   ].join('')
 };
 
-let sockets = {};
+const sockets = {};
 var connect = options => {
   return new Promise((resolve, reject) => {
-    let socketAddress = makeWebsocketAddress(options);
+    const socketAddress = makeWebsocketAddress(options);
     let socket = sockets[socketAddress];
     if (socket && socket.readyState === 1) return resolve(socket)
     if (socket && socket.readyState === 0) {
       const waitForOpen = () => {
-        let socket = sockets[makeWebsocketAddress(options)];
         socket.removeEventListener('open', waitForOpen);
         resolve(socket);
       };
@@ -88,8 +87,7 @@ var connect = options => {
       if (options.debug) {
         console.log('Opening socket to ' + socketAddress);
       }
-      let protocols = (options && options.protocol) || 'notification';
-      socket = new ws_1(socketAddress, protocols);
+      socket = new ws_1(socketAddress, (options && options.subprotocols) || 'notification');
       sockets[socketAddress] = socket;
       socket.addEventListener('message', message => {
         if (options.debug) {
@@ -107,15 +105,14 @@ var connect = options => {
         notificationListener({
           method: 'client.ThunderJS.events.error',
         });
-        sockets[makeWebsocketAddress(options)] = null;
+        sockets[socketAddress] = null;
       });
       const handleConnectClosure = event => {
-        sockets[makeWebsocketAddress(options)] = null;
+        sockets[socketAddress] = null;
         reject(event);
       };
       socket.addEventListener('close', handleConnectClosure);
       socket.addEventListener('open', () => {
-        let socket = sockets[makeWebsocketAddress(options)];
         notificationListener({
           method: 'client.ThunderJS.events.connect',
         });
@@ -124,7 +121,7 @@ var connect = options => {
           notificationListener({
             method: 'client.ThunderJS.events.disconnect',
           });
-          sockets[makeWebsocketAddress(options)] = null;
+          sockets[socketAddress] = null;
         });
         resolve(socket);
       });
