@@ -8,6 +8,7 @@
   "license": "apache",
   "browser": "./dist/thunderJS.js",
   "main": "./dist/thunderJS.mjs",
+  "index": "./dist/thunderJS.cjs",
   "exports": {
     "require": "./dist/thunderJS.cjs",
     "import": "./dist/thunderJS.mjs"
