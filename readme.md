@@ -67,6 +67,7 @@ const config = {
   port: 2020, // defaults to 80
   endpoint: '/api', // defaults to '/jsonrpc'
   protocol: 'wss://', // defaults to 'ws://'
+  subprotocols: 'notification', // WebSocket sub-protocols, defaults to 'notification'
 }
 ```
 
