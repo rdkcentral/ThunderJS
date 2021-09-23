@@ -18,8 +18,16 @@
  */
 
 export default (requestId, plugin, method, params, version) => {
-  // delete possible version key from params
-  params ? delete params.version : null
+  if (params) {
+    // delete possible version key from params
+    delete params.version
+    // if you want to pass 'version' as a parameter, use versionAsParameter
+    if (params.versionAsParameter) {
+      params.version = params.versionAsParameter
+      delete params.versionAsParameter
+    }
+  }
+
   const body = {
     jsonrpc: '2.0',
     id: requestId,

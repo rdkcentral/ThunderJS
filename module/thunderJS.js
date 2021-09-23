@@ -133,7 +133,13 @@ var connect = options => {
 };
 
 var makeBody = (requestId, plugin, method, params, version) => {
-  params ? delete params.version : null;
+  if (params) {
+    delete params.version;
+    if (params.versionAsParameter) {
+      params.version = params.versionAsParameter;
+      delete params.versionAsParameter;
+    }
+  }
   const body = {
     jsonrpc: '2.0',
     id: requestId,
