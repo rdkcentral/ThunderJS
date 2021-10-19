@@ -154,6 +154,25 @@ thunderJS.DeviceInfo.systeminfo({
 })
 ```
 
+If by chance, the function you're calling has a parameter called *version* in its argument list, the above mechanism will bother you. You can use the parameter name `versionAsParameter` instead. When calling the function, the parameter name `versionAsParameter` is replaced by parameter name `version`.
+
+```js
+import ThunderJS from './thunderJS'
+
+const config = {
+  host: '192.168.1.100'
+}
+const thunderJS = ThunderJS(config)
+
+// default version 1 of getStorageInfo() is called
+thunderJS.LISA.getStorageInfo({
+  id: 'wayland-egl-test',
+  type: 'dac',
+  // the call to LISA.1.getStorageInfo() will contain in its parameters: version: '1.0.4'
+  versionAsParameter: '1.0.4'
+})
+```
+
 ### Processing the result of an API call
 
 When an API call to Thunder is made it can return a `result` in case of success or an `error`, when something goes wrong.
