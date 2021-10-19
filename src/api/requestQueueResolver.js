@@ -21,7 +21,11 @@ import { requestsQueue } from '../store'
 
 export default data => {
   if (typeof data === 'string') {
-    data = JSON.parse(data.normalize().replace(/\\x([0-9A-Fa-f]{2})/g, ''))
+    let regex1 = /\\\\x([0-9A-Fa-f]{2})/g //evaluating \\x00 pattern on hidden SSID
+    let regex2 = /\\x([0-9A-Fa-f]{2})/g //evaluating \x00 pattern on hidden SSID
+    data = data.normalize().replace(regex1, '')
+    data = data.normalize().replace(regex2, '')
+    data = JSON.parse(data)
   }
   if (data.id) {
     const request = requestsQueue[data.id]
