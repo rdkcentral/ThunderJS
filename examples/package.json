@@ -12,6 +12,7 @@
   },
   "scripts": {
     "start:browser": "http-server ./browser -o",
+    "start:node-cjs": "node ./node-cjs/index.cjs",
     "start:node": "node -r esm ./node/index.js"
   }
 }
