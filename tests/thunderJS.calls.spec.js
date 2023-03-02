@@ -310,7 +310,7 @@ test('thunderJS - calls - with params: 0', assert => {
         params: 0,
       })
     ),
-    'Should make a jsonrpc body and method TestPlugin.1.feature'
+    'Should make a jsonrpc body and method TestPlugin.1.feature with params 0'
   )
 
   assert.deepEquals(
@@ -321,7 +321,75 @@ test('thunderJS - calls - with params: 0', assert => {
       id: 1,
       params: 0,
     },
-    'Should make a request for TestPlugin.1.feature, with params'
+    'Should make a request for TestPlugin.1.feature, with params 0'
+  )
+
+  assert.end()
+})
+
+test('thunderJS - calls - with params: false', assert => {
+  resetStubsAndSpies()
+
+  let thunderJS = ThunderJS(options)
+
+  // make call using argument style
+  thunderJS.call('TestPlugin', 'feature', false)
+
+  assert.ok(
+    makeBodySpy.returned(
+      sinon.match({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'TestPlugin.1.feature',
+        params: false,
+      })
+    ),
+    'Should make a jsonrpc body and method TestPlugin.1.feature'
+  )
+
+  assert.deepEquals(
+    apiRequestSpy.firstCall.args[1],
+    {
+      jsonrpc: '2.0',
+      method: 'TestPlugin.1.feature',
+      id: 1,
+      params: false,
+    },
+    'Should make a request for TestPlugin.1.feature, with params false'
+  )
+
+  assert.end()
+})
+
+test('thunderJS - calls - with params: ""', assert => {
+  resetStubsAndSpies()
+
+  let thunderJS = ThunderJS(options)
+
+  // make call using argument style
+  thunderJS.call('TestPlugin', 'feature', '')
+
+  assert.ok(
+    makeBodySpy.returned(
+      sinon.match({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'TestPlugin.1.feature',
+        params: '',
+      })
+    ),
+    'Should make a jsonrpc body and method TestPlugin.1.feature with params ""'
+  )
+
+  assert.deepEquals(
+    apiRequestSpy.firstCall.args[1],
+    {
+      jsonrpc: '2.0',
+      method: 'TestPlugin.1.feature',
+      id: 1,
+      params: '',
+    },
+    'Should make a request for TestPlugin.1.feature, with params ""'
   )
 
   assert.end()
