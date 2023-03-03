@@ -34,12 +34,8 @@ export default (requestId, plugin, method, params, version) => {
     method: [plugin, version, method].join('.'),
   }
 
-  // params exist (or explicitely false)
-  params || params === false
-    ? // params is not an empty object, or it is a boolean or a number
-      typeof params === 'object' && Object.keys(params).length === 0
-      ? null
-      : (body.params = params)
-    : null
+  // check if params exist
+  params !== undefined ? (body.params = params) : null
+
   return body
 }

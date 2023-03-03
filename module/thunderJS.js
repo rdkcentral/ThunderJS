@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2021 Metrological
+ * Copyright 2023 Metrological
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -153,12 +153,7 @@ var makeBody = (requestId, plugin, method, params, version) => {
     id: requestId,
     method: [plugin, version, method].join('.'),
   };
-  params || params === false
-    ?
-      typeof params === 'object' && Object.keys(params).length === 0
-      ? null
-      : (body.params = params)
-    : null;
+  params !== undefined ? (body.params = params) : null;
   return body
 };
 
