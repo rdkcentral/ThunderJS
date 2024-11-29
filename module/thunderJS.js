@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Metrological
+ * Copyright 2024 Metrological
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -308,6 +308,13 @@ const resolve = (result, args) => {
     return result
   }
 };
+const diposeListenersQueue = [];
+window.addEventListener('unload', () => {
+  const length = diposeListenersQueue.length;
+  for (let i = 0; i < length; i++) {
+    typeof diposeListenersQueue[i] === 'function' && diposeListenersQueue[i]();
+  }
+});
 const thunder = options => ({
   options,
   api: API(options),
@@ -342,7 +349,9 @@ const thunder = options => ({
         }
       }
     }
-    return listener.apply(this, args)
+    const l = listener.apply(this, args);
+    diposeListenersQueue.push(l.dispose);
+    return l
   },
   once() {
     console.log('todo ...');
