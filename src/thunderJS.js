@@ -57,6 +57,15 @@ const resolve = (result, args) => {
   }
 }
 
+const diposeListenersQueue = []
+
+window.addEventListener('unload', () => {
+  const length = diposeListenersQueue.length
+  for (let i = 0; i < length; i++) {
+    typeof diposeListenersQueue[i] === 'function' && diposeListenersQueue[i]()
+  }
+})
+
 const thunder = options => ({
   options,
   api: API(options),
@@ -100,7 +109,9 @@ const thunder = options => ({
       }
     }
 
-    return listener.apply(this, args)
+    const l = listener.apply(this, args)
+    diposeListenersQueue.push(l.dispose)
+    return l
   },
   once() {
     console.log('todo ...')
