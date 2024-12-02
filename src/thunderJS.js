@@ -20,6 +20,7 @@
 import API from './api'
 import plugins from './plugins/index'
 import listener from './listener'
+import unload from './unload'
 
 export default options => {
   // add extra option with token when thunder.token() is available
@@ -59,7 +60,8 @@ const resolve = (result, args) => {
 
 const diposeListenersQueue = []
 
-window.addEventListener('unload', () => {
+// add a listener to the unload event
+unload(() => {
   const length = diposeListenersQueue.length
   for (let i = 0; i < length; i++) {
     typeof diposeListenersQueue[i] === 'function' && diposeListenersQueue[i]()
@@ -96,25 +98,34 @@ const thunder = options => ({
     // to do
   },
   on() {
-    const args = [...arguments]
-    // first make sure the plugin is the first argument (independent from being called as argument style or object style)
-    // except when listening to a 'special ThunderJS' event
-    if (['connect', 'disconnect', 'error'].indexOf(args[0]) !== -1) {
-      args.unshift('ThunderJS')
-    } else {
-      if (this.plugin) {
-        if (args[0] !== this.plugin) {
-          args.unshift(this.plugin)
-        }
-      }
-    }
-
+    const args = ensurePluginContext(this.plugin, ...arguments)
     const l = listener.apply(this, args)
     diposeListenersQueue.push(l.dispose)
     return l
   },
   once() {
-    console.log('todo ...')
+    const args = ensurePluginContext(this.plugin, ...arguments)
+
+    // Extract the event name and original callback
+    const [, , /*plugin, event*/ originalCallback] = args
+
+    // Create a wrapped callback
+    const onceCallback = (...callbackArgs) => {
+      // Call the original callback
+      originalCallback(...callbackArgs)
+
+      // Dispose of the listener
+      listenerInstance.dispose()
+    }
+
+    // Replace the original callback with the wrapped one
+    args[2] = onceCallback
+
+    // Add the listener and get the dispose method
+    const listenerInstance = listener.apply(this, args)
+    diposeListenersQueue.push(listenerInstance.dispose)
+
+    return listenerInstance
   },
 })
 
@@ -159,4 +170,17 @@ const wrapper = obj => {
       }
     },
   })
+}
+
+function ensurePluginContext(plugin, ...args) {
+  if (['connect', 'disconnect', 'error'].indexOf(args[0]) !== -1) {
+    args.unshift('ThunderJS')
+  } else {
+    if (plugin) {
+      if (args[0] !== plugin) {
+        args.unshift(plugin)
+      }
+    }
+  }
+  return args
 }
