@@ -281,6 +281,23 @@ const unregister = function(plugin, event, errorCallback) {
   }
 };
 
+var unload = callback => {
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('unload', () => {
+      callback();
+    });
+    return
+  }
+  if (typeof process !== 'undefined' && process.on) {
+    process.on('exit', () => {
+      callback();
+    });
+    process.on('SIGINT', () => {
+      callback();
+    });
+  }
+};
+
 var thunderJS = options => {
   if (
     options.token === undefined &&
@@ -309,7 +326,7 @@ const resolve = (result, args) => {
   }
 };
 const diposeListenersQueue = [];
-window.addEventListener('unload', () => {
+unload(() => {
   const length = diposeListenersQueue.length;
   for (let i = 0; i < length; i++) {
     typeof diposeListenersQueue[i] === 'function' && diposeListenersQueue[i]();
@@ -339,22 +356,22 @@ const thunder = options => ({
   subscribe() {
   },
   on() {
-    const args = [...arguments];
-    if (['connect', 'disconnect', 'error'].indexOf(args[0]) !== -1) {
-      args.unshift('ThunderJS');
-    } else {
-      if (this.plugin) {
-        if (args[0] !== this.plugin) {
-          args.unshift(this.plugin);
-        }
-      }
-    }
+    const args = ensurePluginContext(this.plugin, ...arguments);
     const l = listener.apply(this, args);
     diposeListenersQueue.push(l.dispose);
     return l
   },
   once() {
-    console.log('todo ...');
+    const args = ensurePluginContext(this.plugin, ...arguments);
+    const [, ,  originalCallback] = args;
+    const onceCallback = (...callbackArgs) => {
+      originalCallback(...callbackArgs);
+      listenerInstance.dispose();
+    };
+    args[2] = onceCallback;
+    const listenerInstance = listener.apply(this, args);
+    diposeListenersQueue.push(listenerInstance.dispose);
+    return listenerInstance
   },
 });
 const wrapper = obj => {
@@ -395,5 +412,17 @@ const wrapper = obj => {
     },
   })
 };
+function ensurePluginContext(plugin, ...args) {
+  if (['connect', 'disconnect', 'error'].indexOf(args[0]) !== -1) {
+    args.unshift('ThunderJS');
+  } else {
+    if (plugin) {
+      if (args[0] !== plugin) {
+        args.unshift(plugin);
+      }
+    }
+  }
+  return args
+}
 
 export default thunderJS;

@@ -251,3 +251,43 @@ test('Teardown - thunderJS - calls', assert => {
 
   assert.end()
 })
+
+// should execute callback only once when using the once method
+test('thunderJS - notifications - execute callback only once', assert => {
+  resetStubsAndSpies()
+  let thunderJS = ThunderJS(options)
+
+  const callbackSpy = sinon.spy()
+
+  // Register a one-time listener
+  thunderJS.WebKitBrowser.once('visibilitychange', callbackSpy)
+
+  // Trigger the event twice
+  API.notificationListener({
+    method: 'client.WebKitBrowser.events.visibilitychange',
+    params: {
+      hidden: false,
+    },
+  })
+
+  API.notificationListener({
+    method: 'client.WebKitBrowser.events.visibilitychange',
+    params: {
+      hidden: true,
+    },
+  })
+
+  assert.ok(callbackSpy.calledOnce, 'Callback should be called only once')
+
+  assert.ok(
+    callbackSpy.calledWith({ hidden: false }),
+    'Callback should be called with the first event parameters'
+  )
+
+  assert.notOk(
+    callbackSpy.calledWith({ hidden: true }),
+    'Callback should not be called with the second event parameters'
+  )
+
+  assert.end()
+})
