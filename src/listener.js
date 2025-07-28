@@ -31,9 +31,9 @@ export default function(plugin, event, callback, errorCallback) {
       //early return if the listener is already deleted and someone is calling dispose twice
       if (listeners[listener_id] === undefined) return
 
-      listeners[listener_id].splice(index, 1)
-
-      if (listeners[listener_id].length === 0) {
+      // invalidate the callback with the given index to mark it as deleted without changing the array dimensions  
+      listeners[listener_id][index] = undefined;
+      if (listeners[listener_id].every(item => item === undefined)) {
         unregister.call(thunder, plugin, event, errorCallback)
       }
     },

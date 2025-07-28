@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2024 Metrological
+ * Copyright 2025 Metrological
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -230,8 +230,8 @@ function listener(plugin, event, callback, errorCallback) {
     dispose() {
       const listener_id = makeListenerId(plugin, event);
       if (listeners[listener_id] === undefined) return
-      listeners[listener_id].splice(index, 1);
-      if (listeners[listener_id].length === 0) {
+      listeners[listener_id][index] = undefined;
+      if (listeners[listener_id].every(item => item === undefined)) {
         unregister.call(thunder, plugin, event, errorCallback);
       }
     },
