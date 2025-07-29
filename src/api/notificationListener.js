@@ -33,7 +33,7 @@ export default data => {
     const callbacks = listeners[data.method]
     if (callbacks && Array.isArray(callbacks) && callbacks.length) {
       callbacks.forEach(callback => {
-        callback(data.params)
+        if (callback) callback(data.params)
       })
     }
   }
